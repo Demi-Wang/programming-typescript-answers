@@ -86,6 +86,28 @@ is(10, 'foo') // Error TS2345: Argument of type '"foo"' is not assignable
 // [Hard] I should be able to pass any number of arguments
 is([1], [1, 2], [1, 2, 3]) // false
 
+// is([1], [1], [1]) // false，结果错误的原因：Object/Array引用不同，所以不能用===比较
+// function is<T>(a: T, ...b: [T, ...T[]]): boolean {
+//   return b.every(_ => _ === a)
+// }
+
+// Compare multiple Array, Object
+console.log(is([1], [1], [1]));
+console.log(is([100], [100], [100]));
+console.log(is(["demi"], ["demi"], ["demi"]));
+console.log(is({ name: "demi" }, { name: "demi" }, { name: "demi" }));
+
+// 以下两种定义的运行结果一样
+// ...b: T[]
+// ...b: [T, ...T[]]
 function is<T>(a: T, ...b: [T, ...T[]]): boolean {
-  return b.every(_ => _ === a)
+  if (typeof a in ["boolean", "string", "number"]) {
+    return b.every((_) => {
+      return _ === a;
+    });
+  } else {
+    return b.every((_, index) => {
+      return JSON.stringify(_) === JSON.stringify(a);
+    });
+  }
 }
